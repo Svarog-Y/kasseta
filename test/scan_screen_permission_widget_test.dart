@@ -1,14 +1,13 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kasseta/app/app.dart';
 import 'package:kasseta/features/scan/application/scan_controller.dart';
+import 'package:kasseta/features/scan/presentation/scan_screen.dart';
 
 void main() {
-  testWidgets('Initial route shows Scan screen title and permission UI',
-      (tester) async {
+  testWidgets('shows button when ScanNeedsPermission', (tester) async {
     final container = ProviderContainer(
       overrides: [
-        // Force a deterministic state for the initial screen.
         scanControllerProvider.overrideWith(
           () => _StubController(const ScanNeedsPermission()),
         ),
@@ -19,17 +18,16 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: const KassetaApp(),
+        child: const MaterialApp(home: ScanScreen()),
       ),
     );
 
-    // AppBar title is present:
-    expect(find.text('Kasseta — Scan'), findsOneWidget);
-    // Body reflects the stubbed state:
     expect(find.text('Camera permission required.'), findsOneWidget);
+    expect(find.text('Grant camera permission'), findsOneWidget);
   });
 }
 
+/// Minimal test double that returns a fixed initial [ScanState].
 class _StubController extends ScanController {
   _StubController(this._initial);
 
