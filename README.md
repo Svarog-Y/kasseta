@@ -1,4 +1,4 @@
-# kasseta_dev
+# kasseta
 
 A new Flutter project.
 

@@ -32,6 +32,15 @@ class ScanReady extends ScanState {
   const ScanReady();
 }
 
+/// QR found; contains the decoded URI.
+class ScanFound extends ScanState {
+  /// Creates a [ScanFound] state.
+  const ScanFound(this.uri);
+
+  /// The QR as a [Uri].
+  final Uri uri;
+}
+
 /// User permanently denied camera permission (needs system settings).
 class ScanPermissionPermanentlyDenied extends ScanState {
   /// Creates a new [ScanPermissionPermanentlyDenied] state.
@@ -97,5 +106,30 @@ class ScanController extends Notifier<ScanState> {
       case CameraPermissionStatus.unknown:
         state = const ScanNeedsPermission();
     }
+  }
+
+  /// Handle a raw QR payload from the scanner.
+  Future<void> onQrFound(String raw) async {
+    Uri? uri;
+    try {
+      uri = Uri.tryParse(raw);
+    } on FormatException {
+      uri = null;
+    }
+    if (uri == null) {
+      state = const ScanError('Invalid QR content.');
+      return;
+    }
+
+    // ✅ actually use the parser
+    final parser = ref.read(receiptUrlParserProvider);
+    final tokens = parser.parse(uri);
+    if (tokens == null) {
+      state = const ScanError('Not a valid SUF URL.');
+      return;
+    }
+
+    // For now, just store the URI (we’ll use [tokens] later)
+    state = ScanFound(uri);
   }
 }

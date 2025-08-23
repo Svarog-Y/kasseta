@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kasseta/features/scan/application/scan_controller.dart';
+import 'package:kasseta/features/scan/presentation/widgets/qr_scanner_view.dart';
+
 
 /// The main screen for scanning QR codes.
 ///
@@ -64,7 +66,33 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
                 ),
               ],
             ),
-          ScanReady() => const Text('Permission OK. (Scanner coming next)'),
+          ScanReady() => SizedBox.expand(
+            child: QrScannerView(
+              onQr: (value) {
+                ref.read(
+                  scanControllerProvider.notifier
+                ).onQrFound(value);
+              },
+            ),
+          ),
+          ScanFound(:final uri) => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('QR captured.'),
+              const SizedBox(height: 8),
+              Text(
+                uri.toString(),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  // In later phases, continue the flow (fetch/upload).
+                },
+                child: const Text('Continue'),
+              ),
+            ],
+          ),
           ScanError(:final message) => Text('Error: $message'),
         },
       ),

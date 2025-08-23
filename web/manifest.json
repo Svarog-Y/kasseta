@@ -1,6 +1,6 @@
 {
-    "name": "kasseta_dev",
-    "short_name": "kasseta_dev",
+    "name": "kasseta",
+    "short_name": "kasseta",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
