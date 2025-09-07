@@ -14,6 +14,15 @@ import 'package:html/parser.dart' as html_parser;
 ///  • Parser does not execute JavaScript; it inspects HTML/script text only.
 ///  • Kept small so we can expand in later steps without breaking callers.
 class ReceiptLandingParser {
+  /// Extracts both invoice number and token from [html].
+  ///
+  /// Throws [FormatException] if either value is missing or malformed.
+  LandingTokens parse(String html) {
+    final invoice = extractInvoice(html);
+    final token = extractToken(html);
+    return LandingTokens(invoiceNumber: invoice, token: token);
+  }
+
   /// Extracts the token from the provided landing page [html].
   ///
   /// Throws [FormatException] if the token is not found or malformed.
@@ -35,10 +44,8 @@ class ReceiptLandingParser {
   /// Throws [FormatException] if not found or malformed.
   String extractInvoice(String html) {
     final doc = html_parser.parse(html);
-
     final viaDom = _extractInvoiceFromDom(doc);
     final invoice = viaDom ?? _extractInvoiceFromJs(doc);
-
     if (invoice == null) {
       throw const FormatException('Invoice number not found.');
     }
@@ -102,4 +109,19 @@ class ReceiptLandingParser {
     final rx = RegExp(r'^[A-Z0-9]{8}-[A-Z0-9]{8}-\d{5,}$');
     return rx.hasMatch(v);
   }
+}
+
+/// Value object holding the two tokens required by SUF items API.
+class LandingTokens {
+  /// Creates a new [LandingTokens].
+  const LandingTokens({
+    required this.invoiceNumber,
+    required this.token,
+  });
+
+  /// The invoice number string from DOM or script.
+  final String invoiceNumber;
+
+  /// The UUID-like token string from inline script.
+  final String token;
 }
